@@ -1,0 +1,9 @@
+# macOS system files
+.DS_Store
+
+# Local Claude settings
+.claude/settings.local.json
+
+# Game jam outputs (optional - users may want to commit these)
+# *-game/
+# *-game-*/
