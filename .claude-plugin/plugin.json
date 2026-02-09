@@ -1,0 +1,14 @@
+{
+  "name": "game-jam",
+  "version": "1.0.0",
+  "description": "Two AI agents (designer + developer) collaborate autonomously to create complete, playable games from a personality seed and optional constraints",
+  "author": {
+    "name": "Cody Parker",
+    "email": "cody@example.com"
+  },
+  "homepage": "https://github.com/codyparker/ai-game-jam",
+  "repository": "https://github.com/codyparker/ai-game-jam",
+  "license": "MIT",
+  "keywords": ["games", "creative", "collaboration", "autonomous-agents", "game-development"],
+  "skills": "./skills/"
+}
