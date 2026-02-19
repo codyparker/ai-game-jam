@@ -4,7 +4,7 @@ A Claude Code skill that orchestrates two AI agents — a game designer and a ga
 
 ## What It Does
 
-Give the skill a personality seed (like "chaotic goblin energy" or "zen minimalist"), optionally add a theme and game type, and watch as two AI agents work together through 6 phases to design and build a complete game. No human intervention needed!
+Give the skill a personality seed (like "chaotic goblin energy" or "zen minimalist"), optionally add a theme and game type, choose model and design complexity settings, and watch as two AI agents work together through 6 phases to design and build a complete game. No human intervention needed!
 
 **The agents collaborate to:**
 - Create an initial game concept
@@ -59,6 +59,7 @@ Restart Claude Code and the skill should appear when you type `/game-jam`.
 ```
 
 You'll be prompted for:
+Each setup question is asked sequentially (one-by-one), including optional fields.
 
 1. **Designer personality seed** (required)
    - Examples: "chaotic goblin energy", "zen minimalist", "1920s art deco enthusiast"
@@ -72,10 +73,16 @@ You'll be prompted for:
    - Examples: "roguelike", "2-bit color style", "text-based", "puzzle platformer"
    - The game must fit this genre/style if provided
 
-4. **Model selection**
-   - Choose between Opus 4.6 (recommended, higher quality) or Sonnet 4.5 (faster) for each agent
+4. **Model selection (runtime-aware)**
+   - In Claude Code: choose Opus 4.6 (recommended) or Sonnet 4.5
+   - In Codex: choose GPT-5.3 Codex (recommended) or GPT-5 mini
    - Designer model for creative phases
    - Developer model for technical phases and building
+
+5. **Design complexity**
+   - `light`: fast ideation, concise designer-to-developer handoff
+   - `standard` (recommended): balanced ideation and detail
+   - `deep`: broader ideation, more detailed designer communication
 
 The skill will create a dated directory (e.g., `2026-02-08-game/`) and run through all 6 phases automatically.
 
@@ -104,7 +111,7 @@ The skill will list all incomplete jams in your current directory and let you ch
 
 ```
 2026-02-08-game/
-├── state.json              # Progress tracking, model selections, personality/theme
+├── state.json              # Progress tracking, runtime, model selections, personality/theme/type/complexity
 ├── plans/                  # Design documents from each phase
 │   ├── 01-concept.md
 │   ├── 02-tech-response.md
@@ -121,14 +128,25 @@ The skill will list all incomplete jams in your current directory and let you ch
 
 ## Model Selection
 
-The skill supports two model choices for each agent role:
+Model options are selected based on runtime:
 
-- **Opus 4.6** (recommended, default): More capable, produces higher quality and more playable games
-- **Sonnet 4.5**: Faster, but may produce confusing or lower quality results
+- **Claude Code runtime**:
+  - **Opus 4.6** (recommended, default): More capable, produces higher quality and more playable games
+  - **Sonnet 4.5**: Faster, but may produce confusing or lower quality results
+- **Codex runtime**:
+  - **GPT-5.3 Codex** (recommended, default): Strongest quality
+  - **GPT-5 mini**: Faster with lower quality ceiling
 
 You'll be asked to choose models for:
 - **Designer agent** (phases 1, 3, 5)
 - **Developer agent** (phases 2, 4, 6)
+
+## Design Complexity
+
+Choose one designer complexity level per run:
+- **light**: minimal exploration, concise outputs to developer
+- **standard** (default): balanced exploration and communication
+- **deep**: broader exploration and richer handoff detail
 
 ## Examples
 
@@ -167,7 +185,8 @@ Result: A retro arcade game in limited color palette where you defend a pizza sh
 - **Fully autonomous** — No human intervention required during the 6 phases
 - **Pausable & resumable** — Stop at any time, resume later with `/game-jam resume`
 - **Progress tracking** — All state saved in `state.json`
-- **Model flexibility** — Choose Opus 4.6 or Sonnet 4.5 for each agent role
+- **Runtime-aware model flexibility** — Recommends Anthropic models in Claude Code and GPT models in Codex
+- **Complexity control** — Tune how much the designer thinks and how much detail they send to the developer
 - **Collaboration log** — See how the agents reasoned and made decisions
 - **Quality constraints** — Built-in scope limits keep games simple and completable
 
