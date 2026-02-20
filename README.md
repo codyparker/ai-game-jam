@@ -25,30 +25,14 @@ Give the skill a personality seed (like "chaotic goblin energy" or "zen minimali
 - [Claude Code](https://claude.com/code) installed
 - macOS, Linux, or Windows with WSL
 
-### Quick Install (Recommended)
-
-Install directly from the Claude Skills marketplace:
-
-```bash
-# In Claude Code, add the marketplace
-/plugin marketplace add codyparker/claude-skills
-
-# Install the game-jam plugin
-/plugin install game-jam@codyparker-claude-skills
-```
-
-The `/game-jam` skill will be immediately available!
-
-### Manual Installation (Alternative)
-
-If you prefer to install manually:
+### Install
 
 ```bash
 # For personal-level installation (available in all projects):
 git clone https://github.com/codyparker/ai-game-jam ~/.claude/skills/game-jam
 ```
 
-Restart Claude Code and the skill should appear when you type `/game-jam`.
+Restart Claude Code and the `/game-jam` skill will be available.
 
 ## Usage
 
@@ -197,7 +181,7 @@ Contributions are welcome! Please feel free to submit issues or pull requests.
 ### Development Setup
 
 1. Clone the repository
-2. The skill files are in `.claude/skills/game-jam/`
+2. The skill files are in `skills/game-jam/`
 3. See `CLAUDE.md` for detailed documentation on the architecture
 
 ## License

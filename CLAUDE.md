@@ -13,8 +13,8 @@ This is a Claude Code **skill** (invoked via `/game-jam`) that orchestrates two 
 
 ## Repository Structure
 
-- `SKILL.md` — Skill definition with metadata, process flow, and orchestration logic. This is the entry point that Claude Code reads when the skill is invoked.
-- `prompts.md` — Complete agent prompts for all 6 phases, referenced by SKILL.md via `@prompts.md`.
+- `skills/game-jam/SKILL.md` — Skill definition with metadata, process flow, and orchestration logic. This is the entry point that Claude Code reads when the skill is invoked.
+- `skills/game-jam/prompts.md` — Complete agent prompts for all 6 phases, referenced by SKILL.md via `@prompts.md`.
 
 ## Architecture
 
