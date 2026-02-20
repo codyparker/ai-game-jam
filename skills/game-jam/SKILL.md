@@ -129,6 +129,7 @@ Initialize `state.json`:
   "designComplexity": "standard",
   "currentPhase": "designer-round1",
   "completedPhases": [],
+  "phaseTimings": {},
   "gameDir": null,
   "status": "in_progress"
 }
@@ -141,9 +142,11 @@ Each phase dispatches a Task subagent. All subagents inherit the current session
 **Before each phase:**
 - Check if phase is already in `completedPhases` — skip if so
 - Update `currentPhase` in state.json
+- Record the phase start time: run `date +%s` via Bash and store the unix timestamp in `state.json` under `phaseTimings.<phase-name>.start`
 - Tell the user which phase is running
 
 **After each phase:**
+- Record the phase end time: run `date +%s` via Bash and store the unix timestamp in `state.json` under `phaseTimings.<phase-name>.end`
 - Add phase to `completedPhases` in state.json
 - Tell the user the phase is complete
 
