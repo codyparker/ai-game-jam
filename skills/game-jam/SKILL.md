@@ -194,8 +194,15 @@ Task tool (general-purpose):
 
 After all 6 phases complete:
 - Update `state.json` status to `"complete"`
-- Find the game source directory (any subdirectory that isn't `plans/` or `logs/`)
+- Find the game source directory (any subdirectory that isn't `plans/`, `logs/`, or `state.json`)
 - Read the game's `README.md` if it exists
+- Rename the game directory: use the game source subdirectory name as the new name for the top-level dated directory.
+  ```bash
+  # Example: rename 2026-02-19-game/ to gravity-hopper/
+  mv "2026-02-19-game" "gravity-hopper"
+  ```
+  - If a directory with the target name already exists in the parent, append a numeric suffix (`gravity-hopper-2/`, `gravity-hopper-3/`, etc.)
+  - Tell the user the directory was renamed
 - Present a summary to the user:
   - Game name and location
   - How to run it
