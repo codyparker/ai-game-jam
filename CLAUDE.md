@@ -8,7 +8,7 @@ This is a Claude Code **skill** (invoked via `/game-jam`) that orchestrates two 
 
 ## Usage Modes
 
-- **Start new jam**: `/game-jam` — Prompts for personality, theme, game type, runtime-aware model selection, and design complexity, then runs all 6 phases
+- **Start new jam**: `/game-jam` — Prompts for personality, theme, game type, and design complexity, then runs all 6 phases
 - **Resume jam**: `/game-jam resume` — Lists all incomplete jams in the current directory and lets user choose which to resume
 
 ## Repository Structure
@@ -20,17 +20,12 @@ This is a Claude Code **skill** (invoked via `/game-jam`) that orchestrates two 
 
 The skill works as a **phase-based orchestrator**:
 
-1. **Setup**: Asks for personality seed, optional theme constraint, optional game type constraint, runtime (`claude` vs `codex`), model selection for each agent, and design complexity. Setup questions are always asked sequentially (one-by-one), including optional fields. Checks for resumable sessions, creates a dated game directory (`YYYY-MM-DD-game/`) with `state.json`, `plans/`, and `logs/`.
-2. **Design Rounds (Phases 1-5)**: Dispatches Task subagents using the selected models. Designer and developer alternate, producing plan documents in `plans/`. Both append reasoning to `logs/collaboration.md`.
-3. **Build Phase (Phase 6)**: Dispatches a Task subagent using the selected developer model with full tool access to build the actual game.
-4. **Completion**: Updates `state.json` to `"complete"` and presents a summary.
+1. **Setup**: Asks for personality seed, optional theme constraint, optional game type constraint, and design complexity. Setup questions are always asked sequentially (one-by-one), including optional fields. Checks for resumable sessions, creates a dated game directory (`YYYY-MM-DD-game/`) with `state.json`, `plans/`, and `logs/`.
+2. **Design Rounds (Phases 1-5)**: Dispatches Task subagents (inheriting the session's model). Designer and developer alternate, producing plan documents in `plans/`. Both append reasoning to `logs/collaboration.md`.
+3. **Build Phase (Phase 6)**: Dispatches a Task subagent with full tool access to build the actual game.
+4. **Completion**: Generates `stats.md` with collaboration summary and timing data, renames the game directory from `YYYY-MM-DD-game/` to the game name, updates `state.json` to `"complete"`, and presents a summary.
 
-**State management**: `state.json` tracks `currentPhase`, `completedPhases`, `status`, runtime (`runtime`), model selections (`designerModel` and `developerModel`), designer complexity (`designComplexity`), and optional constraints (`theme` and `gameType`) to enable resumability. The orchestrator checks and updates this file before/after each phase. Users can pause at any time (the skill saves progress after each phase) and resume later with `/game-jam resume`.
-
-**Model selection**: Users choose models per agent role, based on runtime:
-- **Claude runtime**: Opus 4.6 (default, recommended) or Sonnet 4.5
-- **Codex runtime**: GPT-5.3 Codex (default, recommended) or GPT-5 mini
-- Designer agent uses selected model in phases 1, 3, 5; developer agent uses selected model in phases 2, 4, 6
+**State management**: `state.json` tracks `currentPhase`, `completedPhases`, `phaseTimings`, `status`, `designComplexity`, and optional constraints (`theme` and `gameType`) to enable resumability. The orchestrator records start/end timestamps for each phase and checks/updates this file before/after each phase. Users can pause at any time (the skill saves progress after each phase) and resume later with `/game-jam resume`.
 
 **Design complexity**: `light`, `standard`, or `deep` controls how much the designer explores and how much detail they communicate to the developer.
 
@@ -59,4 +54,4 @@ The skill is fully pausable and resumable across Claude sessions:
 - **Pause**: Simply stop the session at any time. Progress is saved after each phase completes.
 - **Resume**: Run `/game-jam resume` to see all incomplete jams and choose which to resume.
 - The skill automatically skips completed phases and picks up where it left off.
-- Resumed jams use the same model selections from when they were started.
+- Resumed jams pick up where they left off using the current session's model.
