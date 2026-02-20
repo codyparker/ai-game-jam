@@ -26,7 +26,7 @@ digraph game_jam {
     "Create game directory" [shape=box];
 
     subgraph cluster_design {
-        label="Design Rounds (use selected designer model)";
+        label="Design Rounds";
         "Phase 1: Designer — Initial Concept" [shape=box];
         "Phase 2: Developer — Technical Response" [shape=box];
         "Phase 3: Designer — Revised Design" [shape=box];
@@ -35,7 +35,7 @@ digraph game_jam {
     }
 
     subgraph cluster_build {
-        label="Build Phase (use selected developer model)";
+        label="Build Phase";
         "Phase 6: Developer — Build Game" [shape=box];
     }
 
@@ -64,30 +64,23 @@ digraph game_jam {
 
 1. Search the working directory for all `*-game*/state.json` files with `"status": "in_progress"`
 2. If none found, tell the user "No incomplete game jams found. Run `/game-jam` to start a new one."
-3. If one found, announce which jam will resume (show personality, theme, gameType, complexity, runtime, models, and current phase), then load its state
+3. If one found, announce which jam will resume (show personality, theme, gameType, complexity, and current phase), then load its state
 4. If multiple found, present them to the user using AskUserQuestion:
-   - Show each jam's directory name, creation date, current phase, personality/theme/gameType/complexity/runtime, and models being used
+   - Show each jam's directory name, creation date, current phase, personality/theme/gameType/complexity
    - Let user select which to resume
 5. Load the selected `state.json` and skip to "Run Phases" (step 2)
 6. Backfill missing legacy fields before resuming:
-   - If `runtime` is missing, set it to `claude`
    - If `designComplexity` is missing, set it to `standard`
 
 **New Game Mode** (`/game-jam` with no arguments):
 
 Ask the user for game jam parameters using AskUserQuestion.
 Prompting rules for new games:
-- Ask all six setup questions every time, in order, one question at a time.
+- Ask all four setup questions every time, in order, one question at a time.
 - Wait for the user's answer before asking the next question.
 - Do not skip optional questions; explicitly ask them and allow blank input to mean "none".
 - Do not infer or auto-fill answers from prior context except documented defaults when the user leaves a question blank.
 - Do not start phase execution until all setup questions have been asked and resolved.
-
-Before model selection, determine runtime platform:
-- Prefer automatic detection from host identity and available model IDs.
-- Set `runtime` to `claude` when the host is Claude Code / Anthropic.
-- Set `runtime` to `codex` when the host is Codex / OpenAI.
-- If uncertain, ask the user to choose explicitly (`claude` or `codex`) before continuing.
 
 **First prompt** (game jam configuration):
 
@@ -107,21 +100,9 @@ Before model selection, determine runtime platform:
    - If provided, the game must fit this type
    - Leave blank to skip
 
-**Second prompt** (model selection, runtime-aware):
+**Second prompt** (designer complexity):
 
-4. **Designer agent model** (optional):
-   - Which model to use for designer phases (1, 3, 5)
-   - If `runtime = claude`: options are "Opus 4.6 (Recommended)" or "Sonnet 4.5" (default: Opus 4.6)
-   - If `runtime = codex`: options are "GPT-5.3 Codex (Recommended)" or "GPT-5 mini" (default: GPT-5.3 Codex)
-
-5. **Developer agent model** (optional):
-   - Which model to use for developer phases (2, 4, 6)
-   - If `runtime = claude`: options are "Opus 4.6 (Recommended)" or "Sonnet 4.5" (default: Opus 4.6)
-   - If `runtime = codex`: options are "GPT-5.3 Codex (Recommended)" or "GPT-5 mini" (default: GPT-5.3 Codex)
-
-**Third prompt** (designer complexity):
-
-6. **Design complexity** (optional):
+4. **Design complexity** (optional):
    - Controls how much the designer explores ideas and how detailed their handoff is to the developer
    - Options:
      - `light` — fast convergence, concise communication
@@ -145,9 +126,6 @@ Initialize `state.json`:
   "personality": "<seed>",
   "theme": "<theme or null>",
   "gameType": "<game type or null>",
-  "runtime": "claude",
-  "designerModel": "opus",
-  "developerModel": "opus",
   "designComplexity": "standard",
   "currentPhase": "designer-round1",
   "completedPhases": [],
@@ -156,19 +134,9 @@ Initialize `state.json`:
 }
 ```
 
-Model values:
-- If `runtime = claude`: `"sonnet"` for Sonnet 4.5, `"opus"` for Opus 4.6
-- If `runtime = codex`: `"gpt-5-mini"` for GPT-5 mini, `"gpt-5.3-codex"` for GPT-5.3 Codex
-
-Default model values:
-- If `runtime = claude`: `designerModel = "opus"`, `developerModel = "opus"`
-- If `runtime = codex`: `designerModel = "gpt-5.3-codex"`, `developerModel = "gpt-5.3-codex"`
-
 ### 2. Run Phases
 
-Each phase dispatches a Task subagent. Use the model specified in state.json:
-- Designer phases (1, 3, 5): use `state.designerModel`
-- Developer phases (2, 4, 6): use `state.developerModel`
+Each phase dispatches a Task subagent. All subagents inherit the current session's model automatically — do not pass a `model` parameter to the Task tool.
 
 **Before each phase:**
 - Check if phase is already in `completedPhases` — skip if so
@@ -206,7 +174,6 @@ Before dispatching, replace placeholders in prompts.md:
 
 ```
 Task tool (general-purpose):
-  model: <from state.json - designerModel for phases 1,3,5 or developerModel for phases 2,4,6>
   description: "Phase N: [phase name]"
   prompt: |
     [System prompt from prompts.md with placeholders replaced]
@@ -240,7 +207,6 @@ After all 6 phases complete:
 - **Personality seed** shapes designer creativity but isn't a literal directive — the designer is told to "surprise yourself"
 - **Theme constraint** (optional): If provided, the game must incorporate this theme creatively
 - **Game type constraint** (optional): If provided, the game must fit this genre/style
-- **Runtime-aware model selection**: Use Anthropic models in Claude Code (`opus`/`sonnet`) and GPT models in Codex (`gpt-5.3-codex`/`gpt-5-mini`)
 - **Design complexity**: `light`, `standard`, or `deep` changes designer ideation depth and handoff verbosity to the developer
 - **Scope enforcement**: Designer prompt limits to game-jam-small; Developer rejects anything beyond "medium" complexity
 - **macOS-compatible** tech only — browser games, Python/Pygame, Node, etc.
@@ -251,9 +217,8 @@ After all 6 phases complete:
 
 ## Common Mistakes
 
-- Skipping or batching setup questions — always ask all six questions one-by-one and wait for each answer
+- Skipping or batching setup questions — always ask all four questions one-by-one and wait for each answer
 - Forgetting to update `state.json` between phases — always update before and after
-- Using the wrong model for a phase — always read `designerModel` or `developerModel` from state.json
 - Forgetting to apply `{{DESIGNER_COMPLEXITY_GUIDANCE}}` for designer phases
 - Not providing the absolute working directory path in each subagent prompt
 - Skipping the collaboration log instruction — agents need to be told to append to `logs/collaboration.md`
