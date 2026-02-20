@@ -199,6 +199,51 @@ After all 6 phases complete:
 - Update `state.json` status to `"complete"`
 - Find the game source directory (any subdirectory that isn't `plans/`, `logs/`, or `state.json`)
 - Read the game's `README.md` if it exists
+- Generate `stats.md` in the game directory:
+  1. Read `logs/collaboration.md` and all plan files (`plans/01-concept.md` through `plans/05-final-spec.md`)
+  2. Count files and lines of code in the game source directory via Bash:
+     ```bash
+     find <game-source-dir> -type f | wc -l
+     find <game-source-dir> -type f \( -name "*.py" -o -name "*.js" -o -name "*.html" -o -name "*.css" -o -name "*.ts" \) | xargs wc -l 2>/dev/null
+     ```
+  3. Read `phaseTimings` from `state.json` and compute durations per phase
+  4. Write `stats.md` with this structure:
+  ```markdown
+  # [Game Title] — Jam Stats
+
+  ## The Story
+  (A fun, engaging narrative summary of the entire collaboration — what the designer
+  envisioned, how the developer responded, what got cut, what survived, and what the
+  final game became. Write this in an entertaining way that captures the creative
+  back-and-forth. 2-3 paragraphs.)
+
+  ## Timeline
+  | Phase | Duration | What Happened |
+  |-------|----------|---------------|
+  | 1. Initial Concept | Xm Ys | (one-line summary) |
+  | 2. Tech Response | Xm Ys | (one-line summary) |
+  | 3. Revised Design | Xm Ys | (one-line summary) |
+  | 4. Implementation Plan | Xm Ys | (one-line summary) |
+  | 5. Final Sign-off | Xm Ys | (one-line summary) |
+  | 6. Build | Xm Ys | (one-line summary) |
+  | **Total** | **Xm Ys** | |
+
+  ## Model
+  - **Session model**: (the model name inherited from the parent session)
+
+  ## The Game
+  - **Title**: [name]
+  - **Tech stack**: [from plans/02-tech-response.md]
+  - **Files created**: [count]
+  - **Lines of code**: ~[count]
+
+  ## Design Evolution
+  - **Original pitch**: (elevator pitch from plans/01-concept.md)
+  - **What changed**: (key changes from round 1 to final spec)
+  - **Features cut**: (things deliberately excluded or cut during revision)
+  - **Developer's biggest concern**: (from plans/02-tech-response.md scope concerns)
+  ```
+  The orchestrator writes this directly — no subagent needed. Use the collaboration log and plan files as source material.
 - Rename the game directory: use the game source subdirectory name as the new name for the top-level dated directory.
   ```bash
   # Example: rename 2026-02-19-game/ to gravity-hopper/
