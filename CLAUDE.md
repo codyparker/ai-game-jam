@@ -23,7 +23,7 @@ The skill works as a **phase-based orchestrator**:
 1. **Setup**: Asks for personality seed, optional theme constraint, optional game type constraint, and design complexity. Setup questions are always asked sequentially (one-by-one), including optional fields. Checks for resumable sessions, creates a dated game directory (`YYYY-MM-DD-game/`) with `state.json`, `plans/`, and `logs/`.
 2. **Design Rounds (Phases 1-5)**: Dispatches Task subagents (inheriting the session's model). Designer and developer alternate, producing plan documents in `plans/`. Both append reasoning to `logs/collaboration.md`.
 3. **Build Phase (Phase 6)**: Dispatches a Task subagent with full tool access to build the actual game.
-4. **Completion**: Generates `stats.md` with collaboration summary and timing data, renames the game directory from `YYYY-MM-DD-game/` to the game name, updates `state.json` to `"complete"`, and presents a summary.
+4. **Completion**: Updates `state.json` to `"complete"`, generates `stats.md` with collaboration summary and timing data, renames the game directory from `YYYY-MM-DD-game/` to the game name, and presents a summary.
 
 **State management**: `state.json` tracks `currentPhase`, `completedPhases`, `phaseTimings`, `status`, `designComplexity`, and optional constraints (`theme` and `gameType`) to enable resumability. The orchestrator records start/end timestamps for each phase and checks/updates this file before/after each phase. Users can pause at any time (the skill saves progress after each phase) and resume later with `/game-jam resume`.
 

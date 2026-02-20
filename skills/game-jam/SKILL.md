@@ -130,7 +130,6 @@ Initialize `state.json`:
   "currentPhase": "designer-round1",
   "completedPhases": [],
   "phaseTimings": {},
-  "gameDir": null,
   "status": "in_progress"
 }
 ```
@@ -259,7 +258,7 @@ After all 6 phases complete:
 
 ## Key Details
 
-- **Personality seed** shapes designer creativity but isn't a literal directive — the designer is told to "surprise yourself"
+- **Personality seed** defines the designer's identity and creative instincts — the designer embodies this personality, not just references it
 - **Theme constraint** (optional): If provided, the game must incorporate this theme creatively
 - **Game type constraint** (optional): If provided, the game must fit this genre/style
 - **Design complexity**: `light`, `standard`, or `deep` changes designer ideation depth and handoff verbosity to the developer

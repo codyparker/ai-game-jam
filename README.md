@@ -4,7 +4,7 @@ A Claude Code skill that orchestrates two AI agents — a game designer and a ga
 
 ## What It Does
 
-Give the skill a personality seed (like "chaotic goblin energy" or "zen minimalist"), optionally add a theme and game type, choose model and design complexity settings, and watch as two AI agents work together through 6 phases to design and build a complete game. No human intervention needed!
+Give the skill a personality seed (like "chaotic goblin energy" or "zen minimalist"), optionally add a theme and game type, choose a design complexity, and watch as two AI agents work together through 6 phases to design and build a complete game. No human intervention needed!
 
 **The agents collaborate to:**
 - Create an initial game concept
@@ -73,18 +73,12 @@ Each setup question is asked sequentially (one-by-one), including optional field
    - Examples: "roguelike", "2-bit color style", "text-based", "puzzle platformer"
    - The game must fit this genre/style if provided
 
-4. **Model selection (runtime-aware)**
-   - In Claude Code: choose Opus 4.6 (recommended) or Sonnet 4.5
-   - In Codex: choose GPT-5.3 Codex (recommended) or GPT-5 mini
-   - Designer model for creative phases
-   - Developer model for technical phases and building
-
-5. **Design complexity**
+4. **Design complexity**
    - `light`: fast ideation, concise designer-to-developer handoff
    - `standard` (recommended): balanced ideation and detail
    - `deep`: broader ideation, more detailed designer communication
 
-The skill will create a dated directory (e.g., `2026-02-08-game/`) and run through all 6 phases automatically.
+The skill will create a dated directory (e.g., `2026-02-08-game/`), run through all 6 phases, then rename the directory to the game name (e.g., `gravity-hopper/`).
 
 ### Resume an Incomplete Game Jam
 
@@ -111,7 +105,7 @@ The skill will list all incomplete jams in your current directory and let you ch
 
 ```
 2026-02-08-game/
-├── state.json              # Progress tracking, runtime, model selections, personality/theme/type/complexity
+├── state.json              # Progress tracking, phase timings, personality/theme/type/complexity
 ├── plans/                  # Design documents from each phase
 │   ├── 01-concept.md
 │   ├── 02-tech-response.md
@@ -120,26 +114,12 @@ The skill will list all incomplete jams in your current directory and let you ch
 │   └── 05-final-spec.md
 ├── logs/
 │   └── collaboration.md    # Agent reasoning and decision log
+├── stats.md                # Collaboration summary, timing, and game stats
 └── [game-source]/          # The actual game
     ├── README.md           # How to run the game
     ├── SETUP.md           # Installation instructions (if needed)
     └── assets/            # All images, sounds, etc.
 ```
-
-## Model Selection
-
-Model options are selected based on runtime:
-
-- **Claude Code runtime**:
-  - **Opus 4.6** (recommended, default): More capable, produces higher quality and more playable games
-  - **Sonnet 4.5**: Faster, but may produce confusing or lower quality results
-- **Codex runtime**:
-  - **GPT-5.3 Codex** (recommended, default): Strongest quality
-  - **GPT-5 mini**: Faster with lower quality ceiling
-
-You'll be asked to choose models for:
-- **Designer agent** (phases 1, 3, 5)
-- **Developer agent** (phases 2, 4, 6)
 
 ## Design Complexity
 
@@ -185,7 +165,7 @@ Result: A retro arcade game in limited color palette where you defend a pizza sh
 - **Fully autonomous** — No human intervention required during the 6 phases
 - **Pausable & resumable** — Stop at any time, resume later with `/game-jam resume`
 - **Progress tracking** — All state saved in `state.json`
-- **Runtime-aware model flexibility** — Recommends Anthropic models in Claude Code and GPT models in Codex
+- **Stats tracking** — Generates `stats.md` with collaboration summary, phase timing, and game stats
 - **Complexity control** — Tune how much the designer thinks and how much detail they send to the developer
 - **Collaboration log** — See how the agents reasoned and made decisions
 - **Quality constraints** — Built-in scope limits keep games simple and completable
