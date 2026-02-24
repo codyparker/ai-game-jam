@@ -170,16 +170,40 @@ Each phase dispatches a Task subagent. All subagents inherit the current session
 - Add phase to `completedPhases` in state.json
 - Tell the user the phase is complete
 
-**Phase-to-file mapping and agent prompts:** See @prompts.md for complete agent prompts for each phase.
+**Phase-to-file mapping depends on `designRounds`.** See @prompts.md for complete agent prompts for each phase.
 
-| Phase | Agent | Output File | Tools Needed |
-|-------|-------|-------------|--------------|
-| 1. designer-round1 | Designer | `plans/01-concept.md` | Write, Read |
-| 2. developer-round1 | Developer | `plans/02-tech-response.md` | Write, Read |
-| 3. designer-round2 | Designer | `plans/03-revised-design.md` | Write, Read |
-| 4. developer-round2 | Developer | `plans/04-impl-plan.md` | Write, Read |
-| 5. designer-round3 | Designer | `plans/05-final-spec.md` | Write, Read |
+**3 rounds:**
+
+| Phase | Agent | Output File | Tools |
+|-------|-------|-------------|-------|
+| 1. designer-round1 | Designer | `plans/01-concept.md` | Read, Write |
+| 2. developer-round1 | Developer | `plans/02-tech-response-and-plan.md` | Read, Write |
+| 3. designer-round2 | Designer | `plans/03-final-spec.md` | Read, Write |
+| 4. developer-build | Developer | Game source directory | All tools |
+
+**5 rounds (default):**
+
+| Phase | Agent | Output File | Tools |
+|-------|-------|-------------|-------|
+| 1. designer-round1 | Designer | `plans/01-concept.md` | Read, Write |
+| 2. developer-round1 | Developer | `plans/02-tech-response.md` | Read, Write |
+| 3. designer-round2 | Designer | `plans/03-revised-design.md` | Read, Write |
+| 4. developer-round2 | Developer | `plans/04-impl-plan.md` | Read, Write |
+| 5. designer-round3 | Designer | `plans/05-final-spec.md` | Read, Write |
 | 6. developer-build | Developer | Game source directory | All tools |
+
+**7 rounds:**
+
+| Phase | Agent | Output File | Tools |
+|-------|-------|-------------|-------|
+| 1. designer-round1 | Designer | `plans/01-concept.md` | Read, Write |
+| 2. developer-round1 | Developer | `plans/02-tech-response.md` | Read, Write |
+| 3. designer-round2 | Designer | `plans/03-revised-design.md` | Read, Write |
+| 4. developer-round2 | Developer | `plans/04-dev-feedback.md` | Read, Write |
+| 5. designer-round3 | Designer | `plans/05-second-revision.md` | Read, Write |
+| 6. developer-round3 | Developer | `plans/06-impl-plan.md` | Read, Write |
+| 7. designer-round4 | Designer | `plans/07-final-spec.md` | Read, Write |
+| 8. developer-build | Developer | Game source directory | All tools |
 
 **Dispatching each phase subagent:**
 
@@ -194,6 +218,13 @@ Before dispatching, replace placeholders in prompts.md:
     `"DESIGN COMPLEXITY: STANDARD.\nUse balanced exploration (consider at least one alternative) and provide clear, practical handoff details.\nKeep designer logs to around two short paragraphs per round."`
   - if `designComplexity = deep`:
     `"DESIGN COMPLEXITY: DEEP.\nExplore multiple candidate ideas before converging. Provide richer design rationale, interaction detail, and edge-case notes for the developer.\nKeep designer logs to around three to four short paragraphs per round."`
+- `{{GAME_SCOPE_GUIDANCE}}` → for both designer and developer phases, replace with:
+  - if `gameScope = tiny`:
+    `"GAME SCOPE: TINY.\nDesign a micro-game: one single mechanic, minimal visuals, 2-3 minutes of play. Think one-button games or micro-arcade.\nBuild must stay under 5 steps. Complexity rating must be SIMPLE."`
+  - if `gameScope = small`:
+    `"GAME SCOPE: SMALL.\nDesign a classic game-jam game: one core mechanic, simple visuals, ~5 minutes of fun.\nBuild must stay under 15 steps. Complexity rating must be SIMPLE or MEDIUM."`
+  - if `gameScope = medium`:
+    `"GAME SCOPE: MEDIUM.\nDesign a more ambitious game: 1-2 interlocking mechanics, more content and polish, 10-15 minutes of play.\nBuild can use up to 25 steps. Complexity rating can be up to HARD."`
 
 ```
 Task tool (general-purpose):
@@ -211,7 +242,7 @@ Task tool (general-purpose):
     (For phase 6: You have full tool access.)
 ```
 
-**Note on tool restrictions:** Task subagents cannot have tools restricted programmatically. Include explicit instructions in the prompt about which tools the agent should use. Design phase agents should be told to only use Read and Write. The build phase agent gets full access.
+**Note on tool restrictions:** Task subagents cannot have tools restricted programmatically. Include explicit instructions in the prompt about which tools the agent should use. Design phase agents should be told to only use Read and Write. The build phase agent (always the final phase) gets full access.
 
 ### 3. Completion
 
