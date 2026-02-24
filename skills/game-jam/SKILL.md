@@ -64,25 +64,27 @@ digraph game_jam {
 
 1. Search the working directory for all `*-game*/state.json` files with `"status": "in_progress"`
 2. If none found, tell the user "No incomplete game jams found. Run `/game-jam` to start a new one."
-3. If one found, announce which jam will resume (show personality, theme, gameType, complexity, and current phase), then load its state
+3. If one found, announce which jam will resume (show personality, theme, gameType, complexity, scope, rounds, and current phase), then load its state
 4. If multiple found, present them to the user using AskUserQuestion:
-   - Show each jam's directory name, creation date, current phase, personality/theme/gameType/complexity
+   - Show each jam's directory name, creation date, current phase, personality/theme/gameType/complexity/scope/rounds
    - Let user select which to resume
 5. Load the selected `state.json` and skip to "Run Phases" (step 2)
 6. Backfill missing legacy fields before resuming:
    - If `designComplexity` is missing, set it to `standard`
+   - If `gameScope` is missing, set it to `"small"`
+   - If `designRounds` is missing, set it to `5`
 
 **New Game Mode** (`/game-jam` with no arguments):
 
 Ask the user for game jam parameters using AskUserQuestion.
 Prompting rules for new games:
-- Ask all four setup questions every time, in order, one question at a time.
+- Ask setup questions in order, one question at a time.
 - Wait for the user's answer before asking the next question.
 - Do not skip optional questions; explicitly ask them and allow blank input to mean "none".
 - Do not infer or auto-fill answers from prior context except documented defaults when the user leaves a question blank.
 - Do not start phase execution until all setup questions have been asked and resolved.
 
-**First prompt** (game jam configuration):
+**Creative inputs** (always ask):
 
 1. **Designer personality seed** (required):
    - Can be a short phrase ("chaotic goblin energy") or a full character description
@@ -100,15 +102,32 @@ Prompting rules for new games:
    - If provided, the game must fit this type
    - Leave blank to skip
 
-**Second prompt** (designer complexity):
+**Advanced settings** (gated):
 
-4. **Design complexity** (optional):
-   - Controls how much the designer explores ideas and how detailed their handoff is to the developer
+4. **Adjust advanced settings?** (yes/no, default: no):
+   - If the user says no (or leaves blank), use all defaults and proceed to directory creation
+   - If the user says yes, ask the following one at a time:
+
+5. **Design complexity** (optional, default: `standard`):
+   - How deeply the *designer agent* explores ideas before converging. Does not affect the developer or build phase.
    - Options:
-     - `light` — fast convergence, concise communication
-     - `standard (recommended)` — balanced exploration and detail
-     - `deep` — broader ideation and detailed handoff
-   - Default: `standard`
+     - `light` — Designer picks a direction quickly, keeps handoff notes brief. Good for fast jams.
+     - `standard (recommended)` — Designer considers alternatives before committing, provides clear handoff. Balanced.
+     - `deep` — Designer explores multiple directions with detailed rationale and edge-case notes. Best for ambitious concepts.
+
+6. **Game scope** (optional, default: `small`):
+   - How big and ambitious the game is.
+   - Options:
+     - `tiny` — Single mechanic, minimal visuals, 2-3 minutes of play. One-button games, micro-arcade. Build stays under 5 steps.
+     - `small (recommended)` — One core mechanic, simple visuals, ~5 minutes of fun. Classic game jam size. Build stays under 15 steps.
+     - `medium` — 1-2 interlocking mechanics, more content and polish, 10-15 minutes of play. Up to 25 build steps. Allows HARD build complexity.
+
+7. **Design rounds** (optional, default: `5`):
+   - How many back-and-forth rounds between designer and developer before building.
+   - Options:
+     - `3` — Concept → tech response + plan → sign-off. Minimal discussion, fast to game.
+     - `5 (recommended)` — Full cycle: concept → feedback → revision → implementation plan → sign-off.
+     - `7` — Extra revision loop for more thorough design iteration. Best paired with `deep` complexity or `medium` scope.
 
 Create the game directory structure:
 
@@ -127,6 +146,8 @@ Initialize `state.json`:
   "theme": "<theme or null>",
   "gameType": "<game type or null>",
   "designComplexity": "standard",
+  "gameScope": "small",
+  "designRounds": 5,
   "currentPhase": "designer-round1",
   "completedPhases": [],
   "phaseTimings": {},
