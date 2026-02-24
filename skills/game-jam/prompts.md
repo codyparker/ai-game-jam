@@ -306,6 +306,91 @@ Walk through your architectural thinking. Why this structure? What patterns are 
 
 ---
 
+## Phase 4 (7-round variant): Developer — Feedback
+
+**Agent:** Developer | **Output:** `plans/04-dev-feedback.md` | **Tools:** Read, Write only
+
+```
+Read all plans so far: plans/01-concept.md, plans/02-tech-response.md, and plans/03-revised-design.md.
+
+The designer has revised their design based on your initial feedback. Now give a deeper technical review before they do their final revision. Write plans/04-dev-feedback.md with:
+
+# Developer Feedback — Round 2
+
+## What Works Well
+Elements of the revised design that are solid from a technical perspective. Be specific.
+
+## Remaining Concerns
+Anything that still feels risky, underspecified, or too ambitious. For each concern, propose a concrete alternative.
+
+## Technical Suggestions
+Ideas for making the game better or more feasible that the designer might not have considered. Keep these practical — things you know you can actually build.
+
+## Questions
+Anything still unclear that you need answered before writing the implementation plan.
+
+---
+
+Read logs/collaboration.md and append your reasoning:
+
+## Developer — Round 2: Feedback
+
+What's improved since the first concept? What still worries you? Any new ideas sparked by the designer's revision?
+```
+
+---
+
+## Phase 5 (7-round variant): Designer — Second Revision
+
+**Agent:** Designer | **Output:** `plans/05-second-revision.md` | **Tools:** Read, Write only
+
+```
+The developer has given a second round of feedback on your revised design.
+Match the depth of your revision and communication detail to the active complexity guidance.
+
+Read all plans so far: plans/01-concept.md, plans/02-tech-response.md, plans/03-revised-design.md, and plans/04-dev-feedback.md.
+
+Write plans/05-second-revision.md with:
+
+# [Game Title] — Second Revision
+
+## What Changed
+Summarize what you adjusted based on the developer's second round of feedback and why.
+
+## Updated Gameplay Flow
+Walk through 60 seconds of gameplay moment by moment with all revisions incorporated. What does the player see, do, and feel?
+
+## Visual & Audio Direction
+Updated specifics — actual colors, shapes, patterns, sounds. Concrete enough for the developer to implement without guessing.
+
+## Final Scope
+The definitive, locked-down list of features. Nothing gets added after this.
+
+---
+
+Read logs/collaboration.md and append your reasoning:
+
+## Designer — Round 3: Second Revision
+
+How did the developer's second round of feedback change your thinking? What did you adjust? Is the design stronger for the extra iteration? Use the amount of detail requested by the active complexity guidance.
+```
+
+---
+
+## Phase 6 (7-round variant): Developer — Implementation Plan
+
+Uses the same prompt structure as the standard Phase 4 (Implementation Plan), but reads all plans including the extra rounds: plans/01-concept.md, plans/02-tech-response.md, plans/03-revised-design.md, plans/04-dev-feedback.md, and plans/05-second-revision.md.
+
+Output: `plans/06-impl-plan.md`
+
+## Phase 7 (7-round variant): Designer — Final Sign-off
+
+Uses the same prompt structure as the standard Phase 5 (Final Sign-off), but reads all plans including the extra rounds: plans/01-concept.md through plans/06-impl-plan.md.
+
+Output: `plans/07-final-spec.md`
+
+---
+
 ## Phase 5: Designer — Final Sign-off
 
 **Agent:** Designer | **Output:** `plans/05-final-spec.md` | **Tools:** Read, Write only
