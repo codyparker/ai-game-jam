@@ -55,7 +55,7 @@ You are NOT the idea person. The designer handles creative direction. You handle
 **Agent:** Designer | **Output:** `plans/01-concept.md` | **Tools:** Read, Write only
 
 ```
-Create your initial game concept. Think game jam — small scope, one killer mechanic, immediate fun.
+Create your initial game concept. Match your ambition to the active scope guidance.
 Match the depth of your ideation and the amount of implementation-facing detail to the active complexity guidance.
 
 Write your concept to plans/01-concept.md with exactly these sections:
@@ -284,13 +284,13 @@ Number each step. For each step:
 2. What system/feature it implements
 3. How you'll verify it works before moving on
 
-Keep total build steps under 15. If you need more, the game is too complex — simplify.
+Keep total build steps within the limit set by the active scope guidance. If you need more, the game is too complex — simplify.
 
 ## Core Systems
 Brief description of each major system (rendering, input, game state, etc.) and how they connect.
 
 ## Complexity Check
-Rate the overall build: SIMPLE or MEDIUM. If it feels like HARD, go back to the build order and cut steps until it's MEDIUM at most.
+Rate the overall build against the limits set by the active scope guidance. If it exceeds the allowed complexity, go back to the build order and cut steps.
 
 ## Game Directory Name
 State the kebab-case directory name you'll use for the game source (e.g., `gravity-hopper`, `rogue-rabbit`). Base it on the game title.
