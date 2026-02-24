@@ -7,7 +7,7 @@ description: Use when the user wants to create a game using two collaborating AI
 
 ## Overview
 
-Orchestrate two AI agents — a game designer and a game developer — to autonomously collaborate and produce a complete, playable game. The user provides a personality seed for the designer plus optional constraints, then the system runs 6 phases without human interaction.
+Orchestrate two AI agents — a game designer and a game developer — to autonomously collaborate and produce a complete, playable game. The user provides a personality seed for the designer plus optional constraints, then the system runs the design and build phases without human interaction.
 
 ## Arguments
 
@@ -21,38 +21,31 @@ digraph game_jam {
     rankdir=TB;
 
     "Ask for personality seed" [shape=box];
-    "Check for incomplete session" [shape=diamond];
-    "Offer resume or new" [shape=box];
+    "Ask creative inputs" [shape=box];
+    "Advanced settings?" [shape=diamond];
+    "Ask advanced settings" [shape=box];
     "Create game directory" [shape=box];
 
     subgraph cluster_design {
-        label="Design Rounds";
-        "Phase 1: Designer — Initial Concept" [shape=box];
-        "Phase 2: Developer — Technical Response" [shape=box];
-        "Phase 3: Designer — Revised Design" [shape=box];
-        "Phase 4: Developer — Implementation Plan" [shape=box];
-        "Phase 5: Designer — Final Sign-off" [shape=box];
+        label="Design Rounds (3, 5, or 7 phases)";
+        "Designer and Developer\nalternate rounds" [shape=box];
     }
 
     subgraph cluster_build {
         label="Build Phase";
-        "Phase 6: Developer — Build Game" [shape=box];
+        "Developer — Build Game" [shape=box];
     }
 
     "Show completion summary" [shape=box];
 
-    "Ask for personality seed" -> "Check for incomplete session";
-    "Check for incomplete session" -> "Offer resume or new" [label="found"];
-    "Check for incomplete session" -> "Create game directory" [label="none"];
-    "Offer resume or new" -> "Create game directory" [label="new"];
-    "Offer resume or new" -> "Phase 1: Designer — Initial Concept" [label="resume\n(skip completed)"];
-    "Create game directory" -> "Phase 1: Designer — Initial Concept";
-    "Phase 1: Designer — Initial Concept" -> "Phase 2: Developer — Technical Response";
-    "Phase 2: Developer — Technical Response" -> "Phase 3: Designer — Revised Design";
-    "Phase 3: Designer — Revised Design" -> "Phase 4: Developer — Implementation Plan";
-    "Phase 4: Developer — Implementation Plan" -> "Phase 5: Designer — Final Sign-off";
-    "Phase 5: Designer — Final Sign-off" -> "Phase 6: Developer — Build Game";
-    "Phase 6: Developer — Build Game" -> "Show completion summary";
+    "Ask for personality seed" -> "Ask creative inputs";
+    "Ask creative inputs" -> "Advanced settings?";
+    "Advanced settings?" -> "Ask advanced settings" [label="yes"];
+    "Advanced settings?" -> "Create game directory" [label="no (use defaults)"];
+    "Ask advanced settings" -> "Create game directory";
+    "Create game directory" -> "Designer and Developer\nalternate rounds";
+    "Designer and Developer\nalternate rounds" -> "Developer — Build Game";
+    "Developer — Build Game" -> "Show completion summary";
 }
 ```
 
@@ -239,19 +232,19 @@ Task tool (general-purpose):
 
     TOOL RESTRICTIONS: You should ONLY use [Read, Write] tools.
     Do not use Bash, Edit, or any other tools.
-    (For phase 6: You have full tool access.)
+    (For build phase: You have full tool access.)
 ```
 
 **Note on tool restrictions:** Task subagents cannot have tools restricted programmatically. Include explicit instructions in the prompt about which tools the agent should use. Design phase agents should be told to only use Read and Write. The build phase agent (always the final phase) gets full access.
 
 ### 3. Completion
 
-After all 6 phases complete:
+After all phases complete:
 - Update `state.json` status to `"complete"`
 - Find the game source directory (any subdirectory that isn't `plans/`, `logs/`, or `state.json`)
 - Read the game's `README.md` if it exists
 - Generate `stats.md` in the game directory:
-  1. Read `logs/collaboration.md` and all plan files (`plans/01-concept.md` through `plans/05-final-spec.md`)
+  1. Read `logs/collaboration.md` and all plan files in the plans/ directory
   2. Count files and lines of code in the game source directory via Bash:
      ```bash
      find <game-source-dir> -type f | wc -l
@@ -271,12 +264,7 @@ After all 6 phases complete:
   ## Timeline
   | Phase | Duration | What Happened |
   |-------|----------|---------------|
-  | 1. Initial Concept | Xm Ys | (one-line summary) |
-  | 2. Tech Response | Xm Ys | (one-line summary) |
-  | 3. Revised Design | Xm Ys | (one-line summary) |
-  | 4. Implementation Plan | Xm Ys | (one-line summary) |
-  | 5. Final Sign-off | Xm Ys | (one-line summary) |
-  | 6. Build | Xm Ys | (one-line summary) |
+  (one row per design phase from `completedPhases` in state.json, plus the build phase, using phase name and computed duration)
   | **Total** | **Xm Ys** | |
 
   ## Model
@@ -284,7 +272,7 @@ After all 6 phases complete:
 
   ## The Game
   - **Title**: [name]
-  - **Tech stack**: [from plans/02-tech-response.md]
+  - **Tech stack**: [from the tech response plan file (02-tech-response.md or 02-tech-response-and-plan.md depending on round count)]
   - **Files created**: [count]
   - **Lines of code**: ~[count]
 
@@ -292,7 +280,7 @@ After all 6 phases complete:
   - **Original pitch**: (elevator pitch from plans/01-concept.md)
   - **What changed**: (key changes from round 1 to final spec)
   - **Features cut**: (things deliberately excluded or cut during revision)
-  - **Developer's biggest concern**: (from plans/02-tech-response.md scope concerns)
+  - **Developer's biggest concern**: (from the tech response plan file scope concerns)
   ```
   The orchestrator writes this directly — no subagent needed. Use the collaboration log and plan files as source material.
 - Rename the game directory: use the game source subdirectory name as the new name for the top-level dated directory.
@@ -313,8 +301,10 @@ After all 6 phases complete:
 - **Personality seed** defines the designer's identity and creative instincts — the designer embodies this personality, not just references it
 - **Theme constraint** (optional): If provided, the game must incorporate this theme creatively
 - **Game type constraint** (optional): If provided, the game must fit this genre/style
-- **Design complexity**: `light`, `standard`, or `deep` changes designer ideation depth and handoff verbosity to the developer
-- **Scope enforcement**: Designer prompt limits to game-jam-small; Developer rejects anything beyond "medium" complexity
+- **Design complexity**: `light`, `standard`, or `deep` — controls designer agent ideation depth and handoff verbosity. Does not affect the developer.
+- **Game scope**: `tiny`, `small`, or `medium` — controls game ambition, build step limits, and allowed build complexity. Affects both agents.
+- **Design rounds**: `3`, `5`, or `7` — controls how many design phases run before the build phase
+- **Scope enforcement**: Designer and developer prompts both receive scope guidance via `{{GAME_SCOPE_GUIDANCE}}`
 - **macOS-compatible** tech only — browser games, Python/Pygame, Node, etc.
 - **Assets directory**: Developer is instructed to put all art/images/sounds in `assets/` inside the game source directory
 - **Collaboration log**: Both agents append reasoning to `logs/collaboration.md` each round
@@ -323,8 +313,11 @@ After all 6 phases complete:
 
 ## Common Mistakes
 
-- Skipping or batching setup questions — always ask all four questions one-by-one and wait for each answer
+- Skipping or batching setup questions — always ask questions one-by-one and wait for each answer
+- Asking advanced settings questions when the user said "no" to advanced settings — use defaults instead
 - Forgetting to update `state.json` between phases — always update before and after
+- Using the wrong phase table for the current `designRounds` — check `designRounds` in state.json
 - Forgetting to apply `{{DESIGNER_COMPLEXITY_GUIDANCE}}` for designer phases
+- Forgetting to apply `{{GAME_SCOPE_GUIDANCE}}` for both designer and developer phases
 - Not providing the absolute working directory path in each subagent prompt
 - Skipping the collaboration log instruction — agents need to be told to append to `logs/collaboration.md`
