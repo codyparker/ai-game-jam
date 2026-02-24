@@ -128,6 +128,98 @@ Your honest technical assessment. What excites you about building this? What wor
 
 ---
 
+## Phase 2 (3-round variant): Developer — Tech Response + Implementation Plan
+
+**Agent:** Developer | **Output:** `plans/02-tech-response-and-plan.md` | **Tools:** Read, Write only
+
+```
+Read the designer's initial concept in plans/01-concept.md.
+
+This is a fast jam — you're combining your technical assessment and implementation plan into one document. Write plans/02-tech-response-and-plan.md with:
+
+# Technical Response & Implementation Plan
+
+## Chosen Tech Stack
+What language, framework, or engine will you use? Why? Be specific (e.g., "Python 3 with Pygame" or "vanilla HTML5 Canvas + JavaScript").
+
+## Required Installs
+List anything the user needs to install to play the game. If the answer is "nothing" (e.g., browser game), say so. If installs are needed, provide exact install commands for macOS.
+
+## Feasibility Assessment
+Go through each element of the concept:
+- What's easy to build? ✅
+- What's tricky but doable? ⚠️
+- What's too ambitious and needs simplification? 🔴
+
+## Scope Concerns
+Be honest. If the concept is too big, say so and explain what you'd cut. Propose specific, concrete alternatives for anything you flag.
+
+## File Structure
+```
+game-directory-name/
+├── assets/        # ALL images, sounds, and non-code assets go here
+├── (list every file you plan to create)
+```
+
+## Build Order
+Number each step. For each step:
+1. What file(s) you'll create or modify
+2. What system/feature it implements
+3. How you'll verify it works before moving on
+
+Keep total build steps within the limit set by the active scope guidance. If you need more, simplify.
+
+## Complexity Check
+Rate the overall build against the limits set by the active scope guidance.
+
+## Game Directory Name
+State the kebab-case directory name you'll use for the game source (e.g., `gravity-hopper`, `rogue-rabbit`). Base it on the game title.
+
+---
+
+Read logs/collaboration.md if it exists and append your reasoning:
+
+## Developer — Round 1: Technical Response & Implementation Plan
+
+Your honest technical assessment. What excites you about building this? What worries you? Why did you choose this tech stack over alternatives? Walk through your architectural thinking.
+```
+
+---
+
+## Phase 3 (3-round variant): Designer — Final Sign-off
+
+**Agent:** Designer | **Output:** `plans/03-final-spec.md` | **Tools:** Read, Write only
+
+```
+The developer has responded to your concept with a combined technical assessment and implementation plan. This is a fast jam — one chance to review before building begins.
+Match the depth of your review and communication detail to the active complexity guidance.
+
+Read plans/01-concept.md (your concept) and plans/02-tech-response-and-plan.md (developer's response and plan).
+
+Write plans/03-final-spec.md with:
+
+# [Game Title] — Final Specification
+
+## Approval
+State clearly: approved, approved with changes, or needs revision. If changes, be specific and brief.
+
+## Creative Brief
+The soul of the game in one paragraph. If the developer reads nothing else, this paragraph should make them understand what feeling the game should create.
+
+## Key Details
+Any final clarifications the developer needs. Be brief — they have the implementation plan. Only add things that are missing or could be misunderstood.
+
+---
+
+Read logs/collaboration.md and append your final thoughts:
+
+## Designer — Round 2: Final Sign-off
+
+Your honest reaction to the developer's plan. Do you think this will be fun? What are you most excited to see come to life? Use the amount of detail requested by the active complexity guidance.
+```
+
+---
+
 ## Phase 3: Designer — Revised Design
 
 **Agent:** Designer | **Output:** `plans/03-revised-design.md` | **Tools:** Read, Write only
