@@ -218,6 +218,14 @@ Before dispatching, replace placeholders in prompts.md:
     `"GAME SCOPE: SMALL.\nDesign a classic game-jam game: one core mechanic, simple visuals, ~5 minutes of fun.\nBuild must stay under 15 steps. Complexity rating must be SIMPLE or MEDIUM."`
   - if `gameScope = medium`:
     `"GAME SCOPE: MEDIUM.\nDesign a more ambitious game: 1-2 interlocking mechanics, more content and polish, 10-15 minutes of play.\nBuild can use up to 25 steps. Complexity rating can be up to HARD."`
+- `{{IMPL_PLAN_FILE}}` → for the build phase only, replace with the implementation plan file path based on `designRounds`:
+  - if `designRounds = 3`: `plans/02-tech-response-and-plan.md`
+  - if `designRounds = 5`: `plans/04-impl-plan.md`
+  - if `designRounds = 7`: `plans/06-impl-plan.md`
+- `{{FINAL_SPEC_FILE}}` → for the build phase only, replace with the final spec file path based on `designRounds`:
+  - if `designRounds = 3`: `plans/03-final-spec.md`
+  - if `designRounds = 5`: `plans/05-final-spec.md`
+  - if `designRounds = 7`: `plans/07-final-spec.md`
 
 ```
 Task tool (general-purpose):

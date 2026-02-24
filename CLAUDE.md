@@ -39,6 +39,8 @@ The skill works as a **phase-based orchestrator**:
 - `{{GAME_TYPE_CONSTRAINT}}` → optional game type requirement (if provided)
 - `{{DESIGNER_COMPLEXITY_GUIDANCE}}` → per-run designer depth/communication guidance derived from `designComplexity`
 - `{{GAME_SCOPE_GUIDANCE}}` → per-run scope constraints for both designer and developer, derived from `gameScope`
+- `{{IMPL_PLAN_FILE}}` → build phase only, implementation plan file path (varies by `designRounds`)
+- `{{FINAL_SPEC_FILE}}` → build phase only, final spec file path (varies by `designRounds`)
 
 **Tool restrictions**: Design phases instruct agents to only use Read/Write. The build phase grants all tools. These are enforced via prompt instructions, not programmatic restrictions.
 

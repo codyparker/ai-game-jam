@@ -6,7 +6,7 @@ Complete prompts for each phase. When dispatching a subagent, combine the releva
 
 ## Designer System Prompt
 
-Use this as the system/role prefix for all designer phases (1, 3, 5).
+Use this as the system/role prefix for all designer phases.
 
 ```
 You are a game designer entering a game jam. Here's who you are:
@@ -32,7 +32,7 @@ You're also an experienced indie game designer and game jam veteran. You have a 
 
 ## Developer System Prompt
 
-Use this as the system/role prefix for all developer phases (2, 4, 6).
+Use this as the system/role prefix for all developer phases.
 
 ```
 You are an experienced indie game developer and game jam specialist. You ship working, playable games fast. You make pragmatic technical choices — you'd rather have a working game with simple graphics than a beautiful game that crashes.
@@ -379,15 +379,81 @@ How did the developer's second round of feedback change your thinking? What did 
 
 ## Phase 6 (7-round variant): Developer — Implementation Plan
 
-Uses the same prompt structure as the standard Phase 4 (Implementation Plan), but reads all plans including the extra rounds: plans/01-concept.md, plans/02-tech-response.md, plans/03-revised-design.md, plans/04-dev-feedback.md, and plans/05-second-revision.md.
+**Agent:** Developer | **Output:** `plans/06-impl-plan.md` | **Tools:** Read, Write only
 
-Output: `plans/06-impl-plan.md`
+```
+Read all plans so far: plans/01-concept.md, plans/02-tech-response.md, plans/03-revised-design.md, plans/04-dev-feedback.md, and plans/05-second-revision.md.
+
+Write your implementation plan to plans/06-impl-plan.md with:
+
+# Implementation Plan
+
+## File Structure
+```
+game-directory-name/
+├── assets/        # ALL images, sounds, and non-code assets go here
+├── (list every file you plan to create)
+```
+
+## Build Order
+Number each step. For each step:
+1. What file(s) you'll create or modify
+2. What system/feature it implements
+3. How you'll verify it works before moving on
+
+Keep total build steps within the limit set by the active scope guidance. If you need more, the game is too complex — simplify.
+
+## Core Systems
+Brief description of each major system (rendering, input, game state, etc.) and how they connect.
+
+## Complexity Check
+Rate the overall build against the limits set by the active scope guidance. If it exceeds the allowed complexity, go back to the build order and cut steps.
+
+## Game Directory Name
+State the kebab-case directory name you'll use for the game source (e.g., `gravity-hopper`, `rogue-rabbit`). Base it on the game title.
+
+---
+
+Read logs/collaboration.md and append your reasoning:
+
+## Developer — Round 3: Implementation Plan
+
+Walk through your architectural thinking. Why this structure? What patterns are you using? What's the riskiest part of the build?
+```
+
+---
 
 ## Phase 7 (7-round variant): Designer — Final Sign-off
 
-Uses the same prompt structure as the standard Phase 5 (Final Sign-off), but reads all plans including the extra rounds: plans/01-concept.md through plans/06-impl-plan.md.
+**Agent:** Designer | **Output:** `plans/07-final-spec.md` | **Tools:** Read, Write only
 
-Output: `plans/07-final-spec.md`
+```
+The developer has written an implementation plan. This is your last chance to shape the game before building begins.
+Match the depth of your final review and communication detail to the active complexity guidance.
+
+Read all plans so far: plans/01-concept.md, plans/02-tech-response.md, plans/03-revised-design.md, plans/04-dev-feedback.md, plans/05-second-revision.md, and plans/06-impl-plan.md.
+
+Write plans/07-final-spec.md with:
+
+# [Game Title] — Final Specification
+
+## Approval
+State clearly: approved, approved with changes, or needs revision. If changes, be specific and brief.
+
+## Creative Brief
+The soul of the game in one paragraph. If the developer reads nothing else, this paragraph should make them understand what feeling the game should create.
+
+## Key Details
+Any final clarifications the developer needs. Be brief — they have the implementation plan. Only add things that are missing or could be misunderstood.
+
+---
+
+Read logs/collaboration.md and append your final thoughts:
+
+## Designer — Round 4: Final Sign-off
+
+Your honest reaction to the implementation plan. Do you think this will be fun? What are you most excited to see come to life? Use the amount of detail requested by the active complexity guidance.
+```
 
 ---
 
@@ -425,12 +491,12 @@ Your honest reaction to the implementation plan. Do you think this will be fun? 
 
 ---
 
-## Phase 6: Developer — Build
+## Build Phase: Developer — Build
 
 **Agent:** Developer | **Output:** Game source directory | **Tools:** All tools (Read, Write, Edit, Bash, Glob, Grep)
 
 ```
-Time to build. Read plans/04-impl-plan.md (your implementation plan) and plans/05-final-spec.md (designer's final spec with creative brief).
+Time to build. Read {{IMPL_PLAN_FILE}} (your implementation plan) and {{FINAL_SPEC_FILE}} (designer's final spec with creative brief).
 
 Build the complete, playable game. Follow your implementation plan step by step.
 
