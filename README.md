@@ -4,7 +4,7 @@ A Claude Code skill that orchestrates two AI agents — a game designer and a ga
 
 ## What It Does
 
-Give the skill a personality seed (like "chaotic goblin energy" or "zen minimalist"), optionally add a theme and game type, choose a design complexity, and watch as two AI agents work together through 6 phases to design and build a complete game. No human intervention needed!
+Give the skill a personality seed (like "chaotic goblin energy" or "zen minimalist"), optionally add a theme and game type, and watch as two AI agents work together to design and build a complete game. No human intervention needed!
 
 **The agents collaborate to:**
 - Create an initial game concept
@@ -14,7 +14,7 @@ Give the skill a personality seed (like "chaotic goblin energy" or "zen minimali
 - Actually build the game with all assets
 
 **Games are:**
-- Small, game-jam scope (one core mechanic, ~5 minutes of fun)
+- Configurable scope: tiny (micro-game), small (classic jam), or medium (ambitious)
 - macOS-compatible (browser, Python/Pygame, Node, etc.)
 - Fully playable with assets and setup instructions included
 
@@ -42,8 +42,7 @@ Restart Claude Code and the `/game-jam` skill will be available.
 /game-jam
 ```
 
-You'll be prompted for:
-Each setup question is asked sequentially (one-by-one), including optional fields.
+You'll be prompted for creative inputs (one at a time):
 
 1. **Designer personality seed** (required)
    - Examples: "chaotic goblin energy", "zen minimalist", "1920s art deco enthusiast"
@@ -57,12 +56,13 @@ Each setup question is asked sequentially (one-by-one), including optional field
    - Examples: "roguelike", "2-bit color style", "text-based", "puzzle platformer"
    - The game must fit this genre/style if provided
 
-4. **Design complexity**
-   - `light`: fast ideation, concise designer-to-developer handoff
-   - `standard` (recommended): balanced ideation and detail
-   - `deep`: broader ideation, more detailed designer communication
+4. **Adjust advanced settings?** (yes/no, default: no)
+   - If yes, you can configure:
+     - **Design complexity**: `light` / `standard` / `deep` — how deeply the designer explores ideas
+     - **Game scope**: `tiny` / `small` / `medium` — how ambitious the game is
+     - **Design rounds**: `3` / `5` / `7` — how many back-and-forth rounds before building
 
-The skill will create a dated directory (e.g., `2026-02-08-game/`), run through all 6 phases, then rename the directory to the game name (e.g., `gravity-hopper/`).
+The skill will create a dated directory (e.g., `2026-02-08-game/`), run through the design and build phases, then rename the directory to the game name (e.g., `gravity-hopper/`).
 
 ### Resume an Incomplete Game Jam
 
@@ -76,20 +76,26 @@ The skill will list all incomplete jams in your current directory and let you ch
 
 ## How It Works
 
-### The 6 Phases
+### The Phases
 
-1. **Designer Round 1** — Initial game concept
-2. **Developer Round 1** — Technical feasibility response
-3. **Designer Round 2** — Revised design incorporating feedback
-4. **Developer Round 2** — Complete implementation plan
-5. **Designer Round 3** — Final design sign-off and spec
-6. **Developer Build** — Actually builds the game
+Designer and developer alternate rounds (configurable: 3, 5, or 7 rounds), then the developer builds the game:
+
+**5 rounds (default):**
+1. **Designer** — Initial game concept
+2. **Developer** — Technical feasibility response
+3. **Designer** — Revised design incorporating feedback
+4. **Developer** — Complete implementation plan
+5. **Designer** — Final design sign-off and spec
+6. **Developer** — Build the game
+
+**3 rounds** compress to: concept → tech response + plan → sign-off → build.
+**7 rounds** add an extra feedback/revision cycle before the implementation plan.
 
 ### Output Structure
 
 ```
 2026-02-08-game/
-├── state.json              # Progress tracking, phase timings, personality/theme/type/complexity
+├── state.json              # Progress tracking, phase timings, personality/theme/type/complexity/scope/rounds
 ├── plans/                  # Design documents from each phase
 │   ├── 01-concept.md
 │   ├── 02-tech-response.md
@@ -105,12 +111,27 @@ The skill will list all incomplete jams in your current directory and let you ch
     └── assets/            # All images, sounds, etc.
 ```
 
-## Design Complexity
+## Advanced Settings
 
-Choose one designer complexity level per run:
-- **light**: minimal exploration, concise outputs to developer
-- **standard** (default): balanced exploration and communication
-- **deep**: broader exploration and richer handoff detail
+Optional settings you can adjust (all have sensible defaults):
+
+### Design Complexity
+How deeply the *designer agent* explores ideas. Does not affect the developer.
+- **light**: picks a direction quickly, brief handoff notes
+- **standard** (default): considers alternatives, clear handoff
+- **deep**: explores multiple directions with detailed rationale
+
+### Game Scope
+How big and ambitious the game is.
+- **tiny**: single mechanic, minimal visuals, 2-3 minutes of play
+- **small** (default): one core mechanic, simple visuals, ~5 minutes of fun
+- **medium**: 1-2 interlocking mechanics, more polish, 10-15 minutes of play
+
+### Design Rounds
+How many back-and-forth rounds between designer and developer.
+- **3**: fast — concept, tech response + plan, sign-off
+- **5** (default): full cycle with revision
+- **7**: extra feedback/revision loop for thorough iteration
 
 ## Examples
 
@@ -146,11 +167,11 @@ Result: A retro arcade game in limited color palette where you defend a pizza sh
 
 ## Features
 
-- **Fully autonomous** — No human intervention required during the 6 phases
+- **Fully autonomous** — No human intervention required during design and build
 - **Pausable & resumable** — Stop at any time, resume later with `/game-jam resume`
 - **Progress tracking** — All state saved in `state.json`
 - **Stats tracking** — Generates `stats.md` with collaboration summary, phase timing, and game stats
-- **Complexity control** — Tune how much the designer thinks and how much detail they send to the developer
+- **Configurable** — Tune design complexity, game scope, and number of design rounds
 - **Collaboration log** — See how the agents reasoned and made decisions
 - **Quality constraints** — Built-in scope limits keep games simple and completable
 

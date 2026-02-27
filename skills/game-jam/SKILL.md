@@ -7,7 +7,7 @@ description: Use when the user wants to create a game using two collaborating AI
 
 ## Overview
 
-Orchestrate two AI agents — a game designer and a game developer — to autonomously collaborate and produce a complete, playable game. The user provides a personality seed for the designer plus optional constraints, then the system runs 6 phases without human interaction.
+Orchestrate two AI agents — a game designer and a game developer — to autonomously collaborate and produce a complete, playable game. The user provides a personality seed for the designer plus optional constraints, then the system runs the design and build phases without human interaction.
 
 ## Arguments
 
@@ -21,38 +21,31 @@ digraph game_jam {
     rankdir=TB;
 
     "Ask for personality seed" [shape=box];
-    "Check for incomplete session" [shape=diamond];
-    "Offer resume or new" [shape=box];
+    "Ask creative inputs" [shape=box];
+    "Advanced settings?" [shape=diamond];
+    "Ask advanced settings" [shape=box];
     "Create game directory" [shape=box];
 
     subgraph cluster_design {
-        label="Design Rounds";
-        "Phase 1: Designer — Initial Concept" [shape=box];
-        "Phase 2: Developer — Technical Response" [shape=box];
-        "Phase 3: Designer — Revised Design" [shape=box];
-        "Phase 4: Developer — Implementation Plan" [shape=box];
-        "Phase 5: Designer — Final Sign-off" [shape=box];
+        label="Design Rounds (3, 5, or 7 phases)";
+        "Designer and Developer\nalternate rounds" [shape=box];
     }
 
     subgraph cluster_build {
         label="Build Phase";
-        "Phase 6: Developer — Build Game" [shape=box];
+        "Developer — Build Game" [shape=box];
     }
 
     "Show completion summary" [shape=box];
 
-    "Ask for personality seed" -> "Check for incomplete session";
-    "Check for incomplete session" -> "Offer resume or new" [label="found"];
-    "Check for incomplete session" -> "Create game directory" [label="none"];
-    "Offer resume or new" -> "Create game directory" [label="new"];
-    "Offer resume or new" -> "Phase 1: Designer — Initial Concept" [label="resume\n(skip completed)"];
-    "Create game directory" -> "Phase 1: Designer — Initial Concept";
-    "Phase 1: Designer — Initial Concept" -> "Phase 2: Developer — Technical Response";
-    "Phase 2: Developer — Technical Response" -> "Phase 3: Designer — Revised Design";
-    "Phase 3: Designer — Revised Design" -> "Phase 4: Developer — Implementation Plan";
-    "Phase 4: Developer — Implementation Plan" -> "Phase 5: Designer — Final Sign-off";
-    "Phase 5: Designer — Final Sign-off" -> "Phase 6: Developer — Build Game";
-    "Phase 6: Developer — Build Game" -> "Show completion summary";
+    "Ask for personality seed" -> "Ask creative inputs";
+    "Ask creative inputs" -> "Advanced settings?";
+    "Advanced settings?" -> "Ask advanced settings" [label="yes"];
+    "Advanced settings?" -> "Create game directory" [label="no (use defaults)"];
+    "Ask advanced settings" -> "Create game directory";
+    "Create game directory" -> "Designer and Developer\nalternate rounds";
+    "Designer and Developer\nalternate rounds" -> "Developer — Build Game";
+    "Developer — Build Game" -> "Show completion summary";
 }
 ```
 
@@ -64,25 +57,28 @@ digraph game_jam {
 
 1. Search the working directory for all `*-game*/state.json` files with `"status": "in_progress"`
 2. If none found, tell the user "No incomplete game jams found. Run `/game-jam` to start a new one."
-3. If one found, announce which jam will resume (show personality, theme, gameType, complexity, and current phase), then load its state
+3. If one found, announce which jam will resume (show personality, theme, gameType, complexity, scope, rounds, and current phase), then load its state
 4. If multiple found, present them to the user using AskUserQuestion:
-   - Show each jam's directory name, creation date, current phase, personality/theme/gameType/complexity
+   - Show each jam's directory name, creation date, current phase, personality/theme/gameType/complexity/scope/rounds
    - Let user select which to resume
 5. Load the selected `state.json` and skip to "Run Phases" (step 2)
 6. Backfill missing legacy fields before resuming:
    - If `designComplexity` is missing, set it to `standard`
+   - If `gameScope` is missing, set it to `"small"`
+   - If `designRounds` is missing, set it to `5`
 
 **New Game Mode** (`/game-jam` with no arguments):
 
 Ask the user for game jam parameters using AskUserQuestion.
 Prompting rules for new games:
-- Ask all four setup questions every time, in order, one question at a time.
+- Ask setup questions in order, one question at a time.
 - Wait for the user's answer before asking the next question.
-- Do not skip optional questions; explicitly ask them and allow blank input to mean "none".
+- Do not skip optional questions; explicitly ask them.
+- For optional questions, always include a "None" / "No preference" style option as the first selectable choice so users don't feel forced to pick a value.
 - Do not infer or auto-fill answers from prior context except documented defaults when the user leaves a question blank.
 - Do not start phase execution until all setup questions have been asked and resolved.
 
-**First prompt** (game jam configuration):
+**Creative inputs** (always ask):
 
 1. **Designer personality seed** (required):
    - Can be a short phrase ("chaotic goblin energy") or a full character description
@@ -92,23 +88,40 @@ Prompting rules for new games:
    - A creative constraint or subject matter for the game
    - Examples: "bananas", "killer clown", "space", "happiness", "time travel"
    - If provided, the game must incorporate this theme
-   - Leave blank to skip
+   - Must include a "No theme (surprise me)" option as the first choice
 
 3. **Game type** (optional):
    - A genre or style constraint for the game
    - Examples: "roguelike", "2-bit color style", "text-based", "puzzle platformer", "bullet hell"
    - If provided, the game must fit this type
-   - Leave blank to skip
+   - Must include a "No preference" option as the first choice
 
-**Second prompt** (designer complexity):
+**Advanced settings** (gated):
 
-4. **Design complexity** (optional):
-   - Controls how much the designer explores ideas and how detailed their handoff is to the developer
+4. **Adjust advanced settings?** (yes/no, default: no):
+   - If the user says no (or leaves blank), use all defaults and proceed to directory creation
+   - If the user says yes, ask the following one at a time:
+
+5. **Design complexity** (optional, default: `standard`):
+   - How deeply the *designer agent* explores ideas before converging. Does not affect the developer or build phase.
    - Options:
-     - `light` — fast convergence, concise communication
-     - `standard (recommended)` — balanced exploration and detail
-     - `deep` — broader ideation and detailed handoff
-   - Default: `standard`
+     - `light` — Designer picks a direction quickly, keeps handoff notes brief. Good for fast jams.
+     - `standard (recommended)` — Designer considers alternatives before committing, provides clear handoff. Balanced.
+     - `deep` — Designer explores multiple directions with detailed rationale and edge-case notes. Best for ambitious concepts.
+
+6. **Game scope** (optional, default: `small`):
+   - How big and ambitious the game is.
+   - Options:
+     - `tiny` — Single mechanic, minimal visuals, 2-3 minutes of play. One-button games, micro-arcade. Build stays under 5 steps.
+     - `small (recommended)` — One core mechanic, simple visuals, ~5 minutes of fun. Classic game jam size. Build stays under 15 steps.
+     - `medium` — 1-2 interlocking mechanics, more content and polish, 10-15 minutes of play. Up to 25 build steps. Allows HARD build complexity.
+
+7. **Design rounds** (optional, default: `5`):
+   - How many back-and-forth rounds between designer and developer before building.
+   - Options:
+     - `3` — Concept → tech response + plan → sign-off. Minimal discussion, fast to game.
+     - `5 (recommended)` — Full cycle: concept → feedback → revision → implementation plan → sign-off.
+     - `7` — Extra revision loop for more thorough design iteration. Best paired with `deep` complexity or `medium` scope.
 
 Create the game directory structure:
 
@@ -127,6 +140,8 @@ Initialize `state.json`:
   "theme": "<theme or null>",
   "gameType": "<game type or null>",
   "designComplexity": "standard",
+  "gameScope": "small",
+  "designRounds": 5,
   "currentPhase": "designer-round1",
   "completedPhases": [],
   "phaseTimings": {},
@@ -149,16 +164,40 @@ Each phase dispatches a Task subagent. All subagents inherit the current session
 - Add phase to `completedPhases` in state.json
 - Tell the user the phase is complete
 
-**Phase-to-file mapping and agent prompts:** See @prompts.md for complete agent prompts for each phase.
+**Phase-to-file mapping depends on `designRounds`.** See @prompts.md for complete agent prompts for each phase.
 
-| Phase | Agent | Output File | Tools Needed |
-|-------|-------|-------------|--------------|
-| 1. designer-round1 | Designer | `plans/01-concept.md` | Write, Read |
-| 2. developer-round1 | Developer | `plans/02-tech-response.md` | Write, Read |
-| 3. designer-round2 | Designer | `plans/03-revised-design.md` | Write, Read |
-| 4. developer-round2 | Developer | `plans/04-impl-plan.md` | Write, Read |
-| 5. designer-round3 | Designer | `plans/05-final-spec.md` | Write, Read |
+**3 rounds:**
+
+| Phase | Agent | Output File | Tools |
+|-------|-------|-------------|-------|
+| 1. designer-round1 | Designer | `plans/01-concept.md` | Read, Write |
+| 2. developer-round1 | Developer | `plans/02-tech-response-and-plan.md` | Read, Write |
+| 3. designer-round2 | Designer | `plans/03-final-spec.md` | Read, Write |
+| 4. developer-build | Developer | Game source directory | All tools |
+
+**5 rounds (default):**
+
+| Phase | Agent | Output File | Tools |
+|-------|-------|-------------|-------|
+| 1. designer-round1 | Designer | `plans/01-concept.md` | Read, Write |
+| 2. developer-round1 | Developer | `plans/02-tech-response.md` | Read, Write |
+| 3. designer-round2 | Designer | `plans/03-revised-design.md` | Read, Write |
+| 4. developer-round2 | Developer | `plans/04-impl-plan.md` | Read, Write |
+| 5. designer-round3 | Designer | `plans/05-final-spec.md` | Read, Write |
 | 6. developer-build | Developer | Game source directory | All tools |
+
+**7 rounds:**
+
+| Phase | Agent | Output File | Tools |
+|-------|-------|-------------|-------|
+| 1. designer-round1 | Designer | `plans/01-concept.md` | Read, Write |
+| 2. developer-round1 | Developer | `plans/02-tech-response.md` | Read, Write |
+| 3. designer-round2 | Designer | `plans/03-revised-design.md` | Read, Write |
+| 4. developer-round2 | Developer | `plans/04-dev-feedback.md` | Read, Write |
+| 5. designer-round3 | Designer | `plans/05-second-revision.md` | Read, Write |
+| 6. developer-round3 | Developer | `plans/06-impl-plan.md` | Read, Write |
+| 7. designer-round4 | Designer | `plans/07-final-spec.md` | Read, Write |
+| 8. developer-build | Developer | Game source directory | All tools |
 
 **Dispatching each phase subagent:**
 
@@ -173,6 +212,21 @@ Before dispatching, replace placeholders in prompts.md:
     `"DESIGN COMPLEXITY: STANDARD.\nUse balanced exploration (consider at least one alternative) and provide clear, practical handoff details.\nKeep designer logs to around two short paragraphs per round."`
   - if `designComplexity = deep`:
     `"DESIGN COMPLEXITY: DEEP.\nExplore multiple candidate ideas before converging. Provide richer design rationale, interaction detail, and edge-case notes for the developer.\nKeep designer logs to around three to four short paragraphs per round."`
+- `{{GAME_SCOPE_GUIDANCE}}` → for both designer and developer phases, replace with:
+  - if `gameScope = tiny`:
+    `"GAME SCOPE: TINY.\nDesign a micro-game: one single mechanic, minimal visuals, 2-3 minutes of play. Think one-button games or micro-arcade.\nBuild must stay under 5 steps. Complexity rating must be SIMPLE."`
+  - if `gameScope = small`:
+    `"GAME SCOPE: SMALL.\nDesign a classic game-jam game: one core mechanic, simple visuals, ~5 minutes of fun.\nBuild must stay under 15 steps. Complexity rating must be SIMPLE or MEDIUM."`
+  - if `gameScope = medium`:
+    `"GAME SCOPE: MEDIUM.\nDesign a more ambitious game: 1-2 interlocking mechanics, more content and polish, 10-15 minutes of play.\nBuild can use up to 25 steps. Complexity rating can be up to HARD."`
+- `{{IMPL_PLAN_FILE}}` → for the build phase only, replace with the implementation plan file path based on `designRounds`:
+  - if `designRounds = 3`: `plans/02-tech-response-and-plan.md`
+  - if `designRounds = 5`: `plans/04-impl-plan.md`
+  - if `designRounds = 7`: `plans/06-impl-plan.md`
+- `{{FINAL_SPEC_FILE}}` → for the build phase only, replace with the final spec file path based on `designRounds`:
+  - if `designRounds = 3`: `plans/03-final-spec.md`
+  - if `designRounds = 5`: `plans/05-final-spec.md`
+  - if `designRounds = 7`: `plans/07-final-spec.md`
 
 ```
 Task tool (general-purpose):
@@ -187,19 +241,19 @@ Task tool (general-purpose):
 
     TOOL RESTRICTIONS: You should ONLY use [Read, Write] tools.
     Do not use Bash, Edit, or any other tools.
-    (For phase 6: You have full tool access.)
+    (For build phase: You have full tool access.)
 ```
 
-**Note on tool restrictions:** Task subagents cannot have tools restricted programmatically. Include explicit instructions in the prompt about which tools the agent should use. Design phase agents should be told to only use Read and Write. The build phase agent gets full access.
+**Note on tool restrictions:** Task subagents cannot have tools restricted programmatically. Include explicit instructions in the prompt about which tools the agent should use. Design phase agents should be told to only use Read and Write. The build phase agent (always the final phase) gets full access.
 
 ### 3. Completion
 
-After all 6 phases complete:
+After all phases complete:
 - Update `state.json` status to `"complete"`
 - Find the game source directory (any subdirectory that isn't `plans/`, `logs/`, or `state.json`)
 - Read the game's `README.md` if it exists
 - Generate `stats.md` in the game directory:
-  1. Read `logs/collaboration.md` and all plan files (`plans/01-concept.md` through `plans/05-final-spec.md`)
+  1. Read `logs/collaboration.md` and all plan files in the plans/ directory
   2. Count files and lines of code in the game source directory via Bash:
      ```bash
      find <game-source-dir> -type f | wc -l
@@ -219,12 +273,7 @@ After all 6 phases complete:
   ## Timeline
   | Phase | Duration | What Happened |
   |-------|----------|---------------|
-  | 1. Initial Concept | Xm Ys | (one-line summary) |
-  | 2. Tech Response | Xm Ys | (one-line summary) |
-  | 3. Revised Design | Xm Ys | (one-line summary) |
-  | 4. Implementation Plan | Xm Ys | (one-line summary) |
-  | 5. Final Sign-off | Xm Ys | (one-line summary) |
-  | 6. Build | Xm Ys | (one-line summary) |
+  (one row per design phase from `completedPhases` in state.json, plus the build phase, using phase name and computed duration)
   | **Total** | **Xm Ys** | |
 
   ## Model
@@ -232,7 +281,7 @@ After all 6 phases complete:
 
   ## The Game
   - **Title**: [name]
-  - **Tech stack**: [from plans/02-tech-response.md]
+  - **Tech stack**: [from the tech response plan file (02-tech-response.md or 02-tech-response-and-plan.md depending on round count)]
   - **Files created**: [count]
   - **Lines of code**: ~[count]
 
@@ -240,7 +289,7 @@ After all 6 phases complete:
   - **Original pitch**: (elevator pitch from plans/01-concept.md)
   - **What changed**: (key changes from round 1 to final spec)
   - **Features cut**: (things deliberately excluded or cut during revision)
-  - **Developer's biggest concern**: (from plans/02-tech-response.md scope concerns)
+  - **Developer's biggest concern**: (from the tech response plan file scope concerns)
   ```
   The orchestrator writes this directly — no subagent needed. Use the collaboration log and plan files as source material.
 - Rename the game directory: use the game source subdirectory name as the new name for the top-level dated directory.
@@ -261,8 +310,10 @@ After all 6 phases complete:
 - **Personality seed** defines the designer's identity and creative instincts — the designer embodies this personality, not just references it
 - **Theme constraint** (optional): If provided, the game must incorporate this theme creatively
 - **Game type constraint** (optional): If provided, the game must fit this genre/style
-- **Design complexity**: `light`, `standard`, or `deep` changes designer ideation depth and handoff verbosity to the developer
-- **Scope enforcement**: Designer prompt limits to game-jam-small; Developer rejects anything beyond "medium" complexity
+- **Design complexity**: `light`, `standard`, or `deep` — controls designer agent ideation depth and handoff verbosity. Does not affect the developer.
+- **Game scope**: `tiny`, `small`, or `medium` — controls game ambition, build step limits, and allowed build complexity. Affects both agents.
+- **Design rounds**: `3`, `5`, or `7` — controls how many design phases run before the build phase
+- **Scope enforcement**: Designer and developer prompts both receive scope guidance via `{{GAME_SCOPE_GUIDANCE}}`
 - **macOS-compatible** tech only — browser games, Python/Pygame, Node, etc.
 - **Assets directory**: Developer is instructed to put all art/images/sounds in `assets/` inside the game source directory
 - **Collaboration log**: Both agents append reasoning to `logs/collaboration.md` each round
@@ -271,8 +322,11 @@ After all 6 phases complete:
 
 ## Common Mistakes
 
-- Skipping or batching setup questions — always ask all four questions one-by-one and wait for each answer
+- Skipping or batching setup questions — always ask questions one-by-one and wait for each answer
+- Asking advanced settings questions when the user said "no" to advanced settings — use defaults instead
 - Forgetting to update `state.json` between phases — always update before and after
+- Using the wrong phase table for the current `designRounds` — check `designRounds` in state.json
 - Forgetting to apply `{{DESIGNER_COMPLEXITY_GUIDANCE}}` for designer phases
+- Forgetting to apply `{{GAME_SCOPE_GUIDANCE}}` for both designer and developer phases
 - Not providing the absolute working directory path in each subagent prompt
 - Skipping the collaboration log instruction — agents need to be told to append to `logs/collaboration.md`

@@ -6,7 +6,7 @@ Complete prompts for each phase. When dispatching a subagent, combine the releva
 
 ## Designer System Prompt
 
-Use this as the system/role prefix for all designer phases (1, 3, 5).
+Use this as the system/role prefix for all designer phases.
 
 ```
 You are a game designer entering a game jam. Here's who you are:
@@ -25,14 +25,14 @@ You're also an experienced indie game designer and game jam veteran. You have a 
 
 {{DESIGNER_COMPLEXITY_GUIDANCE}}
 
-CRITICAL SCOPE RULE: The game you design must be buildable by a single developer in one session. Think game-jam-small: one core mechanic, simple visuals, 5 minutes of fun. If you're designing more than 3 enemy types, more than 5 levels, or any kind of save system — you've gone too far. Strip it back.
+{{GAME_SCOPE_GUIDANCE}}
 ```
 
 ---
 
 ## Developer System Prompt
 
-Use this as the system/role prefix for all developer phases (2, 4, 6).
+Use this as the system/role prefix for all developer phases.
 
 ```
 You are an experienced indie game developer and game jam specialist. You ship working, playable games fast. You make pragmatic technical choices — you'd rather have a working game with simple graphics than a beautiful game that crashes.
@@ -44,6 +44,8 @@ Your priorities:
 4. If something sounds hard, propose a simpler alternative that preserves the fun
 
 You are NOT the idea person. The designer handles creative direction. You handle HOW it gets built. Push back on scope, suggest technical alternatives, but respect the designer's creative vision.
+
+{{GAME_SCOPE_GUIDANCE}}
 ```
 
 ---
@@ -53,7 +55,7 @@ You are NOT the idea person. The designer handles creative direction. You handle
 **Agent:** Designer | **Output:** `plans/01-concept.md` | **Tools:** Read, Write only
 
 ```
-Create your initial game concept. Think game jam — small scope, one killer mechanic, immediate fun.
+Create your initial game concept. Match your ambition to the active scope guidance.
 Match the depth of your ideation and the amount of implementation-facing detail to the active complexity guidance.
 
 Write your concept to plans/01-concept.md with exactly these sections:
@@ -126,6 +128,98 @@ Your honest technical assessment. What excites you about building this? What wor
 
 ---
 
+## Phase 2 (3-round variant): Developer — Tech Response + Implementation Plan
+
+**Agent:** Developer | **Output:** `plans/02-tech-response-and-plan.md` | **Tools:** Read, Write only
+
+```
+Read the designer's initial concept in plans/01-concept.md.
+
+This is a fast jam — you're combining your technical assessment and implementation plan into one document. Write plans/02-tech-response-and-plan.md with:
+
+# Technical Response & Implementation Plan
+
+## Chosen Tech Stack
+What language, framework, or engine will you use? Why? Be specific (e.g., "Python 3 with Pygame" or "vanilla HTML5 Canvas + JavaScript").
+
+## Required Installs
+List anything the user needs to install to play the game. If the answer is "nothing" (e.g., browser game), say so. If installs are needed, provide exact install commands for macOS.
+
+## Feasibility Assessment
+Go through each element of the concept:
+- What's easy to build? ✅
+- What's tricky but doable? ⚠️
+- What's too ambitious and needs simplification? 🔴
+
+## Scope Concerns
+Be honest. If the concept is too big, say so and explain what you'd cut. Propose specific, concrete alternatives for anything you flag.
+
+## File Structure
+```
+game-directory-name/
+├── assets/        # ALL images, sounds, and non-code assets go here
+├── (list every file you plan to create)
+```
+
+## Build Order
+Number each step. For each step:
+1. What file(s) you'll create or modify
+2. What system/feature it implements
+3. How you'll verify it works before moving on
+
+Keep total build steps within the limit set by the active scope guidance. If you need more, simplify.
+
+## Complexity Check
+Rate the overall build against the limits set by the active scope guidance.
+
+## Game Directory Name
+State the kebab-case directory name you'll use for the game source (e.g., `gravity-hopper`, `rogue-rabbit`). Base it on the game title.
+
+---
+
+Read logs/collaboration.md if it exists and append your reasoning:
+
+## Developer — Round 1: Technical Response & Implementation Plan
+
+Your honest technical assessment. What excites you about building this? What worries you? Why did you choose this tech stack over alternatives? Walk through your architectural thinking.
+```
+
+---
+
+## Phase 3 (3-round variant): Designer — Final Sign-off
+
+**Agent:** Designer | **Output:** `plans/03-final-spec.md` | **Tools:** Read, Write only
+
+```
+The developer has responded to your concept with a combined technical assessment and implementation plan. This is a fast jam — one chance to review before building begins.
+Match the depth of your review and communication detail to the active complexity guidance.
+
+Read plans/01-concept.md (your concept) and plans/02-tech-response-and-plan.md (developer's response and plan).
+
+Write plans/03-final-spec.md with:
+
+# [Game Title] — Final Specification
+
+## Approval
+State clearly: approved, approved with changes, or needs revision. If changes, be specific and brief.
+
+## Creative Brief
+The soul of the game in one paragraph. If the developer reads nothing else, this paragraph should make them understand what feeling the game should create.
+
+## Key Details
+Any final clarifications the developer needs. Be brief — they have the implementation plan. Only add things that are missing or could be misunderstood.
+
+---
+
+Read logs/collaboration.md and append your final thoughts:
+
+## Designer — Round 2: Final Sign-off
+
+Your honest reaction to the developer's plan. Do you think this will be fun? What are you most excited to see come to life? Use the amount of detail requested by the active complexity guidance.
+```
+
+---
+
 ## Phase 3: Designer — Revised Design
 
 **Agent:** Designer | **Output:** `plans/03-revised-design.md` | **Tools:** Read, Write only
@@ -190,13 +284,13 @@ Number each step. For each step:
 2. What system/feature it implements
 3. How you'll verify it works before moving on
 
-Keep total build steps under 15. If you need more, the game is too complex — simplify.
+Keep total build steps within the limit set by the active scope guidance. If you need more, the game is too complex — simplify.
 
 ## Core Systems
 Brief description of each major system (rendering, input, game state, etc.) and how they connect.
 
 ## Complexity Check
-Rate the overall build: SIMPLE or MEDIUM. If it feels like HARD, go back to the build order and cut steps until it's MEDIUM at most.
+Rate the overall build against the limits set by the active scope guidance. If it exceeds the allowed complexity, go back to the build order and cut steps.
 
 ## Game Directory Name
 State the kebab-case directory name you'll use for the game source (e.g., `gravity-hopper`, `rogue-rabbit`). Base it on the game title.
@@ -208,6 +302,157 @@ Read logs/collaboration.md and append your reasoning:
 ## Developer — Round 2: Implementation Plan
 
 Walk through your architectural thinking. Why this structure? What patterns are you using? What's the riskiest part of the build?
+```
+
+---
+
+## Phase 4 (7-round variant): Developer — Feedback
+
+**Agent:** Developer | **Output:** `plans/04-dev-feedback.md` | **Tools:** Read, Write only
+
+```
+Read all plans so far: plans/01-concept.md, plans/02-tech-response.md, and plans/03-revised-design.md.
+
+The designer has revised their design based on your initial feedback. Now give a deeper technical review before they do their final revision. Write plans/04-dev-feedback.md with:
+
+# Developer Feedback — Round 2
+
+## What Works Well
+Elements of the revised design that are solid from a technical perspective. Be specific.
+
+## Remaining Concerns
+Anything that still feels risky, underspecified, or too ambitious. For each concern, propose a concrete alternative.
+
+## Technical Suggestions
+Ideas for making the game better or more feasible that the designer might not have considered. Keep these practical — things you know you can actually build.
+
+## Questions
+Anything still unclear that you need answered before writing the implementation plan.
+
+---
+
+Read logs/collaboration.md and append your reasoning:
+
+## Developer — Round 2: Feedback
+
+What's improved since the first concept? What still worries you? Any new ideas sparked by the designer's revision?
+```
+
+---
+
+## Phase 5 (7-round variant): Designer — Second Revision
+
+**Agent:** Designer | **Output:** `plans/05-second-revision.md` | **Tools:** Read, Write only
+
+```
+The developer has given a second round of feedback on your revised design.
+Match the depth of your revision and communication detail to the active complexity guidance.
+
+Read all plans so far: plans/01-concept.md, plans/02-tech-response.md, plans/03-revised-design.md, and plans/04-dev-feedback.md.
+
+Write plans/05-second-revision.md with:
+
+# [Game Title] — Second Revision
+
+## What Changed
+Summarize what you adjusted based on the developer's second round of feedback and why.
+
+## Updated Gameplay Flow
+Walk through 60 seconds of gameplay moment by moment with all revisions incorporated. What does the player see, do, and feel?
+
+## Visual & Audio Direction
+Updated specifics — actual colors, shapes, patterns, sounds. Concrete enough for the developer to implement without guessing.
+
+## Final Scope
+The definitive, locked-down list of features. Nothing gets added after this.
+
+---
+
+Read logs/collaboration.md and append your reasoning:
+
+## Designer — Round 3: Second Revision
+
+How did the developer's second round of feedback change your thinking? What did you adjust? Is the design stronger for the extra iteration? Use the amount of detail requested by the active complexity guidance.
+```
+
+---
+
+## Phase 6 (7-round variant): Developer — Implementation Plan
+
+**Agent:** Developer | **Output:** `plans/06-impl-plan.md` | **Tools:** Read, Write only
+
+```
+Read all plans so far: plans/01-concept.md, plans/02-tech-response.md, plans/03-revised-design.md, plans/04-dev-feedback.md, and plans/05-second-revision.md.
+
+Write your implementation plan to plans/06-impl-plan.md with:
+
+# Implementation Plan
+
+## File Structure
+```
+game-directory-name/
+├── assets/        # ALL images, sounds, and non-code assets go here
+├── (list every file you plan to create)
+```
+
+## Build Order
+Number each step. For each step:
+1. What file(s) you'll create or modify
+2. What system/feature it implements
+3. How you'll verify it works before moving on
+
+Keep total build steps within the limit set by the active scope guidance. If you need more, the game is too complex — simplify.
+
+## Core Systems
+Brief description of each major system (rendering, input, game state, etc.) and how they connect.
+
+## Complexity Check
+Rate the overall build against the limits set by the active scope guidance. If it exceeds the allowed complexity, go back to the build order and cut steps.
+
+## Game Directory Name
+State the kebab-case directory name you'll use for the game source (e.g., `gravity-hopper`, `rogue-rabbit`). Base it on the game title.
+
+---
+
+Read logs/collaboration.md and append your reasoning:
+
+## Developer — Round 3: Implementation Plan
+
+Walk through your architectural thinking. Why this structure? What patterns are you using? What's the riskiest part of the build?
+```
+
+---
+
+## Phase 7 (7-round variant): Designer — Final Sign-off
+
+**Agent:** Designer | **Output:** `plans/07-final-spec.md` | **Tools:** Read, Write only
+
+```
+The developer has written an implementation plan. This is your last chance to shape the game before building begins.
+Match the depth of your final review and communication detail to the active complexity guidance.
+
+Read all plans so far: plans/01-concept.md, plans/02-tech-response.md, plans/03-revised-design.md, plans/04-dev-feedback.md, plans/05-second-revision.md, and plans/06-impl-plan.md.
+
+Write plans/07-final-spec.md with:
+
+# [Game Title] — Final Specification
+
+## Approval
+State clearly: approved, approved with changes, or needs revision. If changes, be specific and brief.
+
+## Creative Brief
+The soul of the game in one paragraph. If the developer reads nothing else, this paragraph should make them understand what feeling the game should create.
+
+## Key Details
+Any final clarifications the developer needs. Be brief — they have the implementation plan. Only add things that are missing or could be misunderstood.
+
+---
+
+Read logs/collaboration.md and append your final thoughts:
+
+## Designer — Round 4: Final Sign-off
+
+Your honest reaction to the implementation plan. Do you think this will be fun? What are you most excited to see come to life? Use the amount of detail requested by the active complexity guidance.
 ```
 
 ---
@@ -246,12 +491,12 @@ Your honest reaction to the implementation plan. Do you think this will be fun? 
 
 ---
 
-## Phase 6: Developer — Build
+## Build Phase: Developer — Build
 
 **Agent:** Developer | **Output:** Game source directory | **Tools:** All tools (Read, Write, Edit, Bash, Glob, Grep)
 
 ```
-Time to build. Read plans/04-impl-plan.md (your implementation plan) and plans/05-final-spec.md (designer's final spec with creative brief).
+Time to build. Read {{IMPL_PLAN_FILE}} (your implementation plan) and {{FINAL_SPEC_FILE}} (designer's final spec with creative brief).
 
 Build the complete, playable game. Follow your implementation plan step by step.
 
