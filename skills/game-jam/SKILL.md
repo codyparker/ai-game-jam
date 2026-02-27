@@ -73,7 +73,8 @@ Ask the user for game jam parameters using AskUserQuestion.
 Prompting rules for new games:
 - Ask setup questions in order, one question at a time.
 - Wait for the user's answer before asking the next question.
-- Do not skip optional questions; explicitly ask them and allow blank input to mean "none".
+- Do not skip optional questions; explicitly ask them.
+- For optional questions, always include a "None" / "No preference" style option as the first selectable choice so users don't feel forced to pick a value.
 - Do not infer or auto-fill answers from prior context except documented defaults when the user leaves a question blank.
 - Do not start phase execution until all setup questions have been asked and resolved.
 
@@ -87,13 +88,13 @@ Prompting rules for new games:
    - A creative constraint or subject matter for the game
    - Examples: "bananas", "killer clown", "space", "happiness", "time travel"
    - If provided, the game must incorporate this theme
-   - Leave blank to skip
+   - Must include a "No theme (surprise me)" option as the first choice
 
 3. **Game type** (optional):
    - A genre or style constraint for the game
    - Examples: "roguelike", "2-bit color style", "text-based", "puzzle platformer", "bullet hell"
    - If provided, the game must fit this type
-   - Leave blank to skip
+   - Must include a "No preference" option as the first choice
 
 **Advanced settings** (gated):
 
